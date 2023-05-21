@@ -1,20 +1,16 @@
-
 const express = require("express");
-const fs = require("fs");
 const bodyParser = require("body-parser")
-const localStorage = require("localStorage")
+const fs = require("fs");
 const app = express();
-const PORT = 8000;
 const hostName = "127.0.0.1";
-app.use(bodyParser.urlencoded({ extended: true }));
+const PORT = 8000;
 
+app.use(bodyParser.urlencoded({ extended: true }));  //Use for data receive from frontend(Browser)
 
-
-
-// ----------------------------------------------------------  GET API  --------------------------------------------------------------
+// ---------------------------------------------------  Login Page -------------------------------------------------------------------
 
 app.get("/login", (req, res, next) => {
-    res.send(`<form action='/' method="POST" onsubmit="localStorage.setItem('username',document.getElementById('username').value)">
+    res.send(`<form action='/' method="post" onsubmit="localStorage.setItem('username',document.getElementById('username').value)">
     <input type="text" name="username" id="username">
     <br/>
     <button type="submit">Submit</button>
@@ -23,39 +19,45 @@ app.get("/login", (req, res, next) => {
 })
 
 
-// ----------------------------------------------------------  POST API  --------------------------------------------------------------
 
-app.post("/", (req, res, next) => {
-    fs.readFile('biodata.txt', { encoding: 'utf-8' }, (err, data) => {
+// -----------------------------------------------------  View Page(GET API)  --------------------------------------------------------
+
+app.get("/", (req, res, next) => {
+    fs.readFile('appdata.txt', "utf-8", (err, data) => {
         if (err) {
             console.log(err);
+            data = "No chat Exists";
         }
-        //res.write(`<body> ${data} </body>`);
-        res.send(`<body> ${data} </body><form action='/' method="POST" onsubmit="localStorage.setItem('username2').value = localStorage.getItem('username')">
-    <input type="text" name="username2" id="username2">
-    <br/>
-    <button type="submit">Submit</button>
-    </form>`)
+        res.send(`<body>${data}</body><form action='/' method="post" onsubmit="document.getElementById('username').value = localStorage.getItem('username')">
+        <input type="hidden" name="username" id="username">
+        <input type="text" name="message" id="message">
+        <br/>
+        <button type="submit">Submit</button>
+        </form>`)
+    });
 
-        //const user = req.body.username
-        const mess = req.body.username2
-        const userName = localStorage.getItem('username')
-
-        const chatdata = `${userName}:${mess}`
-        fs.appendFile("biodata.txt", chatdata, (err) => {
-            if (err) {
-                console.log(err);
-            }
-        });
-
-    })
 
 })
 
 
+// ---------------------------------------------------  POST API  --------------------------------------------------------------------
+
+app.post("/", (req, res, next) => {
+    const userdata = req.body.username;
+    //console.log(userdata);
+    const msgdata = req.body.message;
+    //console.log(msgdata);
+    const fullData = `${userdata}:${msgdata}`
+    fs.appendFile('appdata.txt', fullData, (err) => {
+        if (err) {
+            console.log(err);
+        }
+    })
+    res.redirect("/");
+})
 
 
-// ---------------------------------------------------  WrongURL API -------------------------------------------------------------- 
+// ---------------------------------------------------  Wrong URL  --------------------------------------------------------------------
 
 app.all("/*", (req, res) => {
     res.status(404).send('<h1>Page Not Found</h1>')
@@ -63,7 +65,11 @@ app.all("/*", (req, res) => {
 
 
 
-// ---------------------------------------------------------  Listen -------------------------------------------------------------- 
+// ---------------------------------------------------  Server Listen  -----------------------------------------------------------------
+
 app.listen(PORT, () => {
-    console.log(`Server running at http://${hostName}:${PORT}/login`);
-});
+    console.log(`Server Running at  http://${hostName}:${PORT}/login`);
+})
+
+
+
