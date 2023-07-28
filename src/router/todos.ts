@@ -34,7 +34,7 @@ router.put('/todo/:todoId',(req, res, next)=>{
 });
 router.delete('/todo/:todoId',(req, res, next)=>{
     const params = req.params as requestParams
-    todas = todos.filter(todoItem => todoItem.id !==params.todoId);
+    todos = todos.filter(todoItem => todoItem.id !==params.todoId);
     res.status(200).json({message:'Deleted todo', todos:todos});
 })
 export default router;
